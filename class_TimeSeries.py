@@ -46,6 +46,8 @@ class TimeSeries:
     def autoregression(self, lagcount, rm_na=True):
         # intialize plots:
         fig, ax = plt.subplots(nrows=3, ncols=lagcount, figsize=((lagcount * 6), 12))
+        plt.subplots_adjust(hspace=0.5)
+        
         for _lag in range(lagcount):
             # create column
             lag_col_name = 'lag' + str(_lag + 1)
@@ -63,8 +65,10 @@ class TimeSeries:
             # First plot: lag vs remainder
             if lagcount == 1:
                 sns.scatterplot(x=lag_col_name, y='remainder', data=self.data, ax=ax[0])
+                ax[0].set_title(f'{lag_col_name} vs Remainder')
             else:
                 sns.scatterplot(x=lag_col_name, y='remainder', data=self.data, ax=ax[0, _lag])
+                ax[0, _lag].set_title(f'{lag_col_name} vs Remainder')
 
             # auto regressive modelling
             if rm_na is True:
@@ -81,8 +85,10 @@ class TimeSeries:
                 # Second plot: the remainder vs prediction
                 if lagcount == 1:
                     sns.scatterplot(x=pred_col_name, y='remainder', data=self.data, ax=ax[1])
+                    ax[1].set_title(f'{pred_col_name} vs Remainder')
                 else:
                     sns.scatterplot(x=pred_col_name, y='remainder', data=self.data, ax=ax[1, _lag])
+                    ax[1, _lag].set_title(f'{pred_col_name} vs Remainder')
                 
                 # Third plot: remainder vs. prediction error
                 # # Is the remainder prediction error smaller than the remainder itself?
@@ -91,10 +97,12 @@ class TimeSeries:
                 if lagcount == 1:
                     df_plot['remainder'].plot(ylim=[-_ylim, _ylim], legend=True, ax=ax[2])
                     (df_plot['remainder'] - df_plot[pred_col_name]).plot(ylim=[-_ylim, _ylim], ax=ax[2])
+                    ax[2].set_title('Remainder and Prediction Error')
                     ax[2].legend(["Remainder", "Pred_Error"])
                 else:
                     df_plot['remainder'].plot(ylim=[-_ylim, _ylim], legend=True, ax=ax[2, _lag])
                     (df_plot['remainder'] - df_plot[pred_col_name]).plot(ylim=[-_ylim, _ylim], ax=ax[2, _lag], legend=True)
+                    ax[2, _lag].set_title('Remainder and Prediction Error')
                     ax[2, _lag].legend(["Remainder", "Pred_Error"], frameon=False)
 
     def model_fit(self, x_cols="timestep|month_|^lag"):
