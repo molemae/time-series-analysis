@@ -6,6 +6,8 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 
 from sklearn.linear_model import LinearRegression
+from sklearn.model_selection import TimeSeriesSplit, cross_val_score
+from statsmodels.graphics.tsaplots import plot_acf,plot_pacf
 
 class TimeSeries:
 
@@ -25,7 +27,7 @@ class TimeSeries:
         m = LinearRegression()
         m.fit(X, self.data[self.y_column])
         self.data['trend'] = m.predict(X)
-        print('Trend: Linear Regressio', '\nIntercept:', m.intercept_, '\nSlope: ', m.coef_)
+        print('Trend: Linear Regression', '\nIntercept:', m.intercept_, '\nSlope: ', m.coef_)
 
     def seasonality(self):
         seasonal_dummies = pd.get_dummies(self.data.index.month, prefix='month')
@@ -44,10 +46,16 @@ class TimeSeries:
         self.data['remainder'] = self.data[self.y_column] - self.data['trend_seasonal']
 
     def autoregression(self, lagcount, rm_na=True):
-        # intialize plots:
+        # plot pacf and acf
+        fig,ax = plt.subplots(nrows=1, ncols=2, figsize= (12,6))
+        plot_acf(self.data['remainder'],ax=ax[0])
+        plt.xlabel('lags')
+        plot_pacf(self.data['remainder'],ax=ax[1]);12
+
+        # intialize lag plots:
         fig, ax = plt.subplots(nrows=3, ncols=lagcount, figsize=((lagcount * 6), 12))
         plt.subplots_adjust(hspace=0.5)
-        
+
         for _lag in range(lagcount):
             # create column
             lag_col_name = 'lag' + str(_lag + 1)
@@ -105,24 +113,41 @@ class TimeSeries:
                     ax[2, _lag].set_title('Remainder and Prediction Error')
                     ax[2, _lag].legend(["Remainder", "Pred_Error"], frameon=False)
 
+
     def model_fit(self, x_cols="timestep|month_|^lag"):
-        X = self.data.filter(regex=x_cols)
+        self.X_full = self.data.filter(regex=x_cols)
         self.model = LinearRegression()
-        self.model.fit(X, self.data[self.y_column])
-    
-    def predict(self, x_cols="timestep|month_|^lag"):
+        self.model.fit(self.X_full, self.data[self.y_column])
+        
+    def predict(self):
         if self.model is None:
             print("Model not found. Fitting autoregressive model.")
             self.model_fit()
-
-        X = self.data.filter(regex='timestep|month_|^lag')
         
-        self.data['full_pred'] = self.model.predict(X)
+        self.data['full_pred'] = self.model.predict(self.X_full)
 
         df_plot = self.data.iloc[-(2*365):].copy()
         ax = df_plot[[self.y_column,'full_pred']].plot()
         ax.set_title(f'Full model')
         plt.show()
+    
+    # CrossValidation:
+    def cross_val(self,n_splits=5):
+        """ Calculates cross validation scores for times series."""
+
+        # Create a TimeSeriesSplit object
+        ts_split = TimeSeriesSplit(n_splits=n_splits)
+
+        # Create the time series split
+        time_series_split = ts_split.split(self.X_full, self.data[self.y_column])
+
+        # CrossVal
+        crossval = cross_val_score(estimator=self.model,
+                                   X=self.X_full,
+                                   y=self.data[self.y_column],
+                                   cv=time_series_split)
+        
+        print('Cross Validation Score:\n', crossval, '\nMean: ', round(crossval.mean(), 3))
 
 df = pd.read_pickle('data/df_train')
 df = df[['tg']]
@@ -130,6 +155,8 @@ ts = TimeSeries(df,'tg')
 
 ts.autoregression(lagcount=1)
 ts.predict()
+ts.cross_val()
+
 
 
 # %%
