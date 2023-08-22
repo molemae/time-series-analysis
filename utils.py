@@ -17,9 +17,7 @@ def eda_describe(dataframe,y_column, missing_value=None):
         dataframe (pd.DataFrame): DataFrame containing the time series
         y_column (str): name of time column
         missing_value (, optional): value of missing values. Defaults to None.
-    """    
-    # plot original time series:
-    dataframe.plot()
+    """
 
     # print min, max and gap:
     print('Min:', dataframe[y_column].min(),
@@ -119,6 +117,7 @@ def traintest(dataframe,split=365):
 # aggregate data 
 def agg(dataframe,aggmethod='mean'):
     ''' Aggregates temperature values to monthly values
+    
     Parameters
     ----------
     dataframe: pd.Dataframe: data input

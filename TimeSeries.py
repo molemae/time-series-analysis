@@ -19,7 +19,7 @@ class TimeSeries:
         self.x_columns = "timestep|month_|^lag"
         self.lagcount = None
         self.X_full = None
-        self.X_future = None
+        self.X_forecast = None
         self.model = None
         self.plot_acf = None
         self.plot_pacf = None
@@ -171,7 +171,7 @@ class TimeSeries:
                                    y=self.data[self.y_column],
                                    cv=time_series_split)
         
-        print('Cross Validation Score:\n', crossval, '\nMean: ', round(crossval.mean(), 3))
+        print('Cross Validation Scores:\n', crossval, '\nMean: ', round(crossval.mean(), 3))
     
     # create future data step
     def forecast(self):
@@ -179,30 +179,44 @@ class TimeSeries:
         index = self.data.index[-1]
 
         # create timestep
-        timestep = [self.data.loc[index,'timestep']+i for i in range(self.lagcount)]
+        timestep = [self.data.loc[index,'timestep']+1]
 
         # generate month columns 
-        month_columns = np.zeros((self.lagcount,12),dtype=int)
-
-        for i in range(self.lagcount):
-            forecast_month = index.month + i + 1
-            if (forecast_month) > 12:
-                forecast_month -= 13
-            month_columns[i,forecast_month] = 1
+        month_columns = np.zeros((1,12),dtype=int)
+        forecast_month = index.month + 1
+        if (forecast_month) > 12:
+            forecast_month -= 13
+        
+        month_columns[forecast_month] = 1
 
         # add lag value (last y value in data frame)
         index_lag = self.data.index[-self.lagcount:]
         lag1 = self.data.loc[index_lag,self.y_column]
 
-        X_future = pd.concat(
-            (pd.DataFrame(np.array(timestep).reshape(self.lagcount,1)),
+        self.X_forecast = pd.concat(
+            (pd.DataFrame(np.array(timestep)),
             pd.DataFrame(month_columns),
-            pd.DataFrame(np.array(lag1).reshape(self.lagcount,1))),
+            pd.DataFrame(np.array(lag1).reshape(1,self.lagcount))),
             axis=1
             )
 
-        print(X_future)
-        # X_future.columns = self.X_full.columns
-        #return self.model.predict(self.X_future)
+        # forecast
+        y_forecast = self.model.predict(self.X_forecast)
+        
+        # combine last data points with last week 
+        df_plot = self.data.copy().iloc[-7:,[0]]
+        df_forecast = pd.DataFrame(
+            {self.y_column: y_forecast},
+            index = [index+pd.DateOffset(months=1)])
+        
+        # plot forecast and last week of time series
+        df_plot = pd.concat([df_plot,df_forecast])
+        ax = sns.lineplot(data=df_plot, marker='o', markersize=7,)
+        ax.plot(df_forecast.index, df_forecast['tg'], marker='o', markersize=9)
+        plt.title('TimeSeries: Forecast')
+        plt.ylabel('Temperature [0.1°C]')
+        plt.show()
+        
+        return None
 
 # %%

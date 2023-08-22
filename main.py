@@ -1,9 +1,5 @@
 # %%
 import pandas as pd
-import seaborn as sns
-import matplotlib.pyplot as plt
-# from sklearn.linear_model import LinearRegression
-from datetime import date as dt
 from TimeSeries import TimeSeries
 from utils import eda_describe,time_series_plot, imputer, agg, traintest
 
@@ -36,16 +32,16 @@ df_train, df_test = traintest(df)
 ######################################
 
 # %%
-# Splitting Time Series and predicting
-ts = TimeSeries(df_train,'tg')
+# Train data set: Model, Trend, Seasonality, Remainder and combining to full model
+ts_train = TimeSeries(df_train,'tg')
+ts_train.autoregression(lagcount=1)
+ts_train.predict()
+ts_train.cross_val()
 
-ts.autoregression(lagcount=1)
-ts.predict()
-ts.cross_val()
+# %%
 
 print('\nValidation data\n')
 
-df_test=pd.read_pickle('data/df_test')
 df_test = df[['tg']]
 ts_test = TimeSeries(df,'tg')
 
@@ -56,8 +52,7 @@ ts_test.cross_val()
 # %%
 # Forecast
 ts_full = TimeSeries(df,'tg')
-ts_full.autoregression(2)
-ts_full.predict()
+ts_full.autoregression(2,print_plot=False)
+ts_full.predict(print_plot=False)
+ts_full.cross_val()
 ts_full.forecast()
-
-# %%
