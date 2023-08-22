@@ -1,3 +1,14 @@
 __pycache__/
 */__pycache__/
 data/ECA_blended_custom/
+
+.gitignore
+dump.py
+autoregressive_model.py
+forecast.py
+Scribble.txt
+change_detection.py
+class_TimesSeries_org.py
+stationary_test.py
+
+org_class_TimesSeries_org.py

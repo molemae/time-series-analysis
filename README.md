@@ -2,11 +2,13 @@
 A project using Auto Regressive Model for a short term air temperature forecast.
 
 **Steps:**
- - EDA and data cleaning (EDA.py)
- - Seperating Time Series into 3 compenents:
+ - EDA and data cleaning (main.py)
+ - Seperating Time Series into 3 compenents (class_TimeSeries.py):
     - Trend
     - Seasonality
     - Remainder
+
  - Modelling 
-    - selecting number of lags by Box Jenkins
-    - 
+    - Auto Regressive Model (class_TimeSeries.py) 
+    - forecasting (class_TimeSeries.py)
+    - Crossvalidation (class_TimeSeries.py)

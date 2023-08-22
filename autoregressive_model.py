@@ -47,33 +47,33 @@ lags_order = ar_select_order(df['remainder'], maxlag=5)
 # Creating Full Model
 
 # add lag1, remove remainder
-# def predict_full(df,df_val=df):
-#     """Predict Time Series based using trend, seasonality and lag as input features.
+def predict_full(df,df_val=df):
+    """Predict Time Series based using trend, seasonality and lag as input features.
 
-#     Args:
-#         df (pd.DataFrame): Training data frame containg the input features named 'Timestep', 'month_*' and 'lag*'. 
-#         df2 (pd.DataFrame, optional):Validation data. Defaults to using training data instead of validation data.
+    Args:
+        df (pd.DataFrame): Training data frame containg the input features named 'Timestep', 'month_*' and 'lag*'. 
+        df2 (pd.DataFrame, optional):Validation data. Defaults to using training data instead of validation data.
 
-#     Returns:
-#         list: Predicted time series. Returns Predictions for Validation data if is given.
-#     """
-#     create
-#     X_full = df.filter(regex='timestep|month_|^lag')
-#     y_full = df['tg']
-#     df_val_X = df_val.filter(regex='timestep|month_|^lag')
-#     df_val_y = df_val['tg']
-#     # fit linear regression
-#     m_full = LinearRegression()
-#     m_full.fit(X_full, y_full) 
-#     print('r2:', m_full.score(df_val_X, df_val_y))
-#     df2_X['pred'] = m_full.predict(df_val_X)    
-#     return df_val_X['pred']
+    Returns:
+        list: Predicted time series. Returns Predictions for Validation data if is given.
+    """
+    # create
+    X_full = df.filter(regex='timestep|month_|^lag')
+    y_full = df['tg']
+    df_val_X = df_val.filter(regex='timestep|month_|^lag')
+    df_val_y = df_val['tg']
+    # fit linear regression
+    m_full = LinearRegression()
+    m_full.fit(X_full, y_full) 
+    print('r2:', m_full.score(df_val_X, df_val_y))
+    df['pred'] = m_full.predict(df_val_X)    
+    return df_val_X['pred']
 
 
 
-# df['pred_full'] = predict_full(df)
-#     #plot
-# df.loc['1980':'2020',['tg','pred_full']].plot()
+df['pred_full'] = predict_full(df)
+    #plot
+df.loc['1980':'2020',['tg','pred_full']].plot()
 
 # %%
 # CrossValidation:
